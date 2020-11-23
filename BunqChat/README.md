@@ -1,42 +1,29 @@
-# Slim Framework 4 Skeleton Application
+# Bunq Chat Application API
 
-[![Coverage Status](https://coveralls.io/repos/github/slimphp/Slim-Skeleton/badge.svg?branch=master)](https://coveralls.io/github/slimphp/Slim-Skeleton?branch=master)
-
-Use this skeleton application to quickly setup and start working on a new Slim Framework 4 application. This application uses the latest Slim 4 with Slim PSR-7 implementation and PHP-DI container implementation. It also uses the Monolog logger.
-
-This skeleton application was built for Composer. This makes setting up a new Slim Framework application quick and easy.
+This is a simple chat application API that uses the Slim framework and an SQLite database. GUI is not implemented, so the only API exist. You can access it using Postman or some other tool. 
 
 ## Install the Application
 
-Run this command from the directory in which you want to install your new Slim Framework application.
-
+start by using: ( or some other server like xampp)
 ```bash
-composer create-project slim/slim-skeleton [my-app-name]
+ php -S localhost:8080 -t public public/index.php
 ```
+The database will init by itself on first entry.
 
-Replace `[my-app-name]` with the desired directory name for your new application. You'll want to:
 
-* Point your virtual host document root to your new application's `public/` directory.
-* Ensure `logs/` is web writable.
+User needs to be logged in so put your token into Authorization heated.
+API:
+POST localhost:8080/user (name, password)
+registers new user
 
-To run the application in development, you can run these commands 
+POST localhost:8080/login (name, password)
+to login user, returns authorization token.
 
-```bash
-cd [my-app-name]
-composer start
-```
+POST localhost:8080/message(message, to_user_id)
+sends a new message, to_user_id should be the id of the user you are sending a message.
 
-Or you can use `docker-compose` to run the app with `docker`, so you can run these commands:
-```bash
-cd [my-app-name]
-docker-compose up -d
-```
-After that, open `http://localhost:8080` in your browser.
+GET: localhost:8080/message/{id} 
+returns your conversation with user {id}
 
-Run this command in the application directory to run the test suite
-
-```bash
-composer test
-```
-
-That's it! Now go build something cool.
+GET: localhost:8080/message {id} 
+returns user ids with whom you previously had conversations
