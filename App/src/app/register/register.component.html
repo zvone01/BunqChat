@@ -1,0 +1,18 @@
+<nb-layout>
+    <nb-layout-header><h1>Register</h1></nb-layout-header>
+    <nb-layout-column >
+                <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                    <div class="form-group">
+                        <label for="description">Username: </label>
+                        <input nbInput  [(ngModel)]="Username" type="text" class="form-control" formControlName="username" required placeholder="Username">
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="description">Password: </label>
+                        <input nbInput  type="password" class="form-control" formControlName="password" required>
+                    </div>
+                    <button nbButton  type="submit"  status="primary" >Submit</button>
+                </form>
+    </nb-layout-column>
+  </nb-layout>
+

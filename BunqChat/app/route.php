@@ -6,6 +6,7 @@ declare(strict_types=1);
 use Slim\App;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as RequestInterface;
+use Slim\Exception\HttpNotFoundException;
 
 
 // include database and object files
@@ -15,6 +16,7 @@ include_once 'models/message.php';
 include_once 'config/token.php';
 
 return function (App $app) {
+
     //create new user
     $app->post('/user', function (RequestInterface $request, ResponseInterface $response, $args) {
 
@@ -51,6 +53,37 @@ return function (App $app) {
         }
 
         return $response;
+    });
+
+    //get user name from userid
+    $app->get('/user/{id}', function (RequestInterface $request, ResponseInterface $response, $args) {
+
+        if (!isLogedin($request)) {
+            return is401Response($response, "unauthorized");
+        }
+
+        $id = $args['id'];
+        if (!userExist($id)) {
+            return is400Response($response, "error");
+        }
+        $database = new Database();
+        $db = $database->getConnection();
+
+        $user = new User($db);
+        // set user property values
+        $user->id =  $id;
+
+
+        //check if username is taken by selecting user from db
+        $stmt = $user->get_user_by_id();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row == false) {
+            return is400Response($response, "unknown user");
+        }
+        $user->password = '';
+        $user->name = $row['name'];
+        return is200Response($response, $user);
+
     });
 
     //send message
@@ -138,10 +171,8 @@ return function (App $app) {
         $stmt = $message->get_all_chats();
         $users = [];
         while ($row = $stmt->fetchObject()) {
-            array_push($users, $row->to_user_id);
-            array_push($users, $row->from_user_id);
+            array_push($users, array('id'=> $row->id,'name'=>$row->name) );
         }
-        $users = array_values(array_unique($users));
         return is200Response($response, $users);
     });
 
@@ -166,7 +197,7 @@ return function (App $app) {
             //verfy password
             if (password_verify($user->password, $row['password'])) {
                 $token = Token::create_token($row['id'], $row['name']);
-                return is200Response($response, $token);
+                return is200LoginnResponse($response, "successful", $token,$row['id'] );
             } else {
                 $responseMessage = "invalid username or password";
 
@@ -175,6 +206,18 @@ return function (App $app) {
         } else {
             return is401Response($response, "Unauthorised");
         }
+    });
+
+    
+    $app->post('/checktoken', function (RequestInterface $request, ResponseInterface $response, $args) {
+        if (!isLogedin($request)) {
+            return is401Response($response, "unauthorized");
+        }
+        return is200Response($response, "ok");
+    });
+
+    $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($request, $response) {
+        throw new HttpNotFoundException($request);
     });
 };
 
@@ -213,6 +256,15 @@ function is401Response($response, $responseMessage)
 function is200Response($response, $responseMessage)
 {
     $responseMessage = json_encode(["success" => true, "response" => $responseMessage]);
+    $response->getBody()->write($responseMessage);
+    return $response->withHeader("Content-Type", "application/json")
+        ->withStatus(200);
+}
+
+
+function is200LoginnResponse($response, $responseMessage, $token, $userId)
+{
+    $responseMessage = json_encode(["success" => true, "token"=> $token, "id" => $userId, "response" => $responseMessage]);
     $response->getBody()->write($responseMessage);
     return $response->withHeader("Content-Type", "application/json")
         ->withStatus(200);

@@ -29,6 +29,6 @@ $middleware($app);
 $route =  require __DIR__ .'/../app/route.php';
 $route($app);
 
-
+$app->addBodyParsingMiddleware();
 //Run app
 $app->run();

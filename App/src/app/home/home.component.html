@@ -1,0 +1,15 @@
+<nb-layout>
+    <nb-layout-header>Chat</nb-layout-header>
+    <nb-layout-column class="colored-column-basic">
+      <nb-card size="small">
+        <nb-list>
+          <nb-list-item *ngFor="let user of users">
+            <nb-user [name]="user.name" (click)="goTo(user.id)" >
+            </nb-user>
+          </nb-list-item>
+        </nb-list>
+      </nb-card>
+      
+    </nb-layout-column>
+    <nb-layout-footer>----</nb-layout-footer>
+  </nb-layout>

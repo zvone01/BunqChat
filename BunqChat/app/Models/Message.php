@@ -97,12 +97,13 @@ function delete(){
 
 // returns last message of each conversation
 function get_all_chats() {
-    $query = "
-                SELECT DISTINCT 
-                CASE WHEN to_user_id > from_user_id THEN to_user_id ELSE from_user_id END as to_user_id,
-                CASE WHEN to_user_id > from_user_id THEN from_user_id ELSE to_user_id END as from_user_id
-            FROM message
-            WHERE to_user_id = :from_user_id or from_user_id= :from_user_id";
+    $query = "SELECT  b.id, u.name  FROM user u 
+                JOIN
+                (SELECT DISTINCT 
+                CASE WHEN to_user_id = :from_user_id THEN from_user_id ELSE to_user_id END as id
+            FROM message 
+            WHERE to_user_id = :from_user_id or from_user_id= :from_user_id) as b 
+                ON u.id = b.id";
         // prepare query
     $stmt = $this->conn->prepare($query);
 
@@ -134,7 +135,7 @@ function get_messages() {
     $query =" SELECT  * FROM " . $this->table_name . " WHERE 
         ((from_user_id = :from_user_id and to_user_id = :to_user_id ) OR (from_user_id = :to_user_id and to_user_id = :from_user_id)) 
         AND created_at <  :created_at  
-        ORDER by created_at DESC LIMIT 50";
+        ORDER by created_at ASC  LIMIT 50";
 
         // prepare query
     $stmt = $this->conn->prepare($query);
